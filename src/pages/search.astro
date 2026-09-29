@@ -3,6 +3,11 @@ export const prerender = false;
 
 import { search } from "emdash";
 import Base from "../layouts/Base.astro";
+import { normalizeLocale, localizePath } from "../utils/i18n";
+import { t } from "../utils/dict";
+
+const locale = normalizeLocale(Astro.currentLocale);
+const L = (p: string) => localizePath(p, locale);
 
 const query = Astro.url.searchParams.get("q")?.trim() || "";
 
@@ -11,39 +16,39 @@ const query = Astro.url.searchParams.get("q")?.trim() || "";
 // results, and handles tokenization/stemming. Templates that grep all
 // post bodies in JS quickly become unusable past a few hundred posts.
 const { items: results } = query
-	? await search(query, { collections: ["posts"], limit: 30 })
+	? await search(query, { collections: ["posts"], limit: 30, locale })
 	: { items: [] };
 ---
 
 <Base
-	title={query ? `Cari: ${query}` : "Cari"}
-	description="Cari artikel"
+	title={query ? `${t(locale, "searchInTitle")}: ${query}` : t(locale, "searchTitle")}
+	description={t(locale, "searchDesc")}
 >
 	<section class="search-page">
-		<h1 class="search-title">Pencarian</h1>
+		<h1 class="search-title">{t(locale, "searchTitle")}</h1>
 
-		<form method="get" action="/search" class="search-form">
+		<form method="get" action={L("/search")} class="search-form">
 			<label for="site-search-query" class="visually-hidden"
-				>Cari artikel</label
+				>{t(locale, "searchDesc")}</label
 			>
 			<input
 				id="site-search-query"
 				type="search"
 				name="q"
 				value={query}
-				placeholder="Cari artikel..."
+				placeholder={t(locale, "searchPlaceholderFull")}
 				class="search-input"
 				autofocus
 			/>
-			<button type="submit" class="search-button">Cari</button>
+			<button type="submit" class="search-button">{t(locale, "searchButton")}</button>
 		</form>
 
 		{
 			query && (
 				<p class="search-summary">
 					{results.length === 0
-						? `Tidak ada hasil untuk "${query}"`
-						: `${results.length} hasil untuk "${query}"`}
+						? `${t(locale, "noResultsFor")} "${query}"`
+						: `${results.length} ${t(locale, "resultsFor")} "${query}"`}
 				</p>
 			)
 		}
@@ -54,10 +59,10 @@ const { items: results } = query
 					{results.map((result) => (
 						<li class="search-result">
 							<a
-								href={`/posts/${result.slug ?? result.id}`}
+								href={L(`/posts/${result.slug ?? result.id}`)}
 								class="result-link"
 							>
-								<h2 class="result-title">{result.title ?? "Tanpa judul"}</h2>
+								<h2 class="result-title">{result.title ?? t(locale, "untitled")}</h2>
 								{result.snippet && (
 									<p class="result-snippet" set:html={result.snippet} />
 								)}
@@ -68,7 +73,7 @@ const { items: results } = query
 			)
 		}
 
-		{!query && <p class="search-hint">Masukkan kata kunci untuk mencari artikel.</p>}
+		{!query && <p class="search-hint">{t(locale, "searchHint")}</p>}
 	</section>
 </Base>
 

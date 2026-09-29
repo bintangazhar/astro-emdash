@@ -2,6 +2,11 @@
 import { getEmDashCollection, getTermsForEntries } from "emdash";
 import Base from "../../layouts/Base.astro";
 import { getReadingTime } from "../../utils/reading-time";
+import { normalizeLocale, intlLocale, localizePath } from "../../utils/i18n";
+import { t } from "../../utils/dict";
+
+const locale = normalizeLocale(Astro.currentLocale);
+const L = (p: string) => localizePath(p, locale);
 
 // Sort in the database rather than in JS — lets the DB use its index on
 // published_at and avoids a full-table scan on the client.
@@ -14,6 +19,7 @@ const {
 	orderBy: { published_at: "desc" },
 	limit: 20,
 	cursor,
+	locale,
 });
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
@@ -25,6 +31,7 @@ const tagsByEntry = await getTermsForEntries(
 	"posts",
 	posts.map((p) => p.data.id),
 	"tag",
+	{ locale },
 );
 
 const postsWithTags = posts.map((post) => ({
@@ -34,26 +41,26 @@ const postsWithTags = posts.map((post) => ({
 }));
 
 const formatDate = (date: Date) =>
-	date.toLocaleDateString("id-ID", {
+	date.toLocaleDateString(intlLocale(locale), {
 		year: "numeric",
 		month: "long",
 		day: "numeric",
 	});
 ---
 
-<Base title="Semua Artikel" description="Jelajahi semua artikel">
+<Base title={t(locale, "allArticles")} description={t(locale, "browseAll")}>
 	<div class="posts-page">
 		<header class="page-header">
-			<h1 class="page-title">Semua Artikel</h1>
+			<h1 class="page-title">{t(locale, "allArticles")}</h1>
 			<p class="page-description">
 				{posts.length}{" "}
-				{posts.length === 1 ? "artikel" : "artikel"}
+				{posts.length === 1 ? t(locale, "articleOne") : t(locale, "articleOther")}
 			</p>
 		</header>
 
 		{
 			posts.length === 0 ? (
-				<p class="empty">Belum ada artikel.</p>
+				<p class="empty">{t(locale, "noArticles")}</p>
 			) : (
 				<div class="posts-list">
 					{postsWithTags.map(({ post, tags, bylines }) => (
@@ -74,7 +81,7 @@ const formatDate = (date: Date) =>
 															/>
 														)}
 														<span class="post-byline-name">
-															<a href={`/author/${credit.byline.slug}`}>
+															<a href={L(`/author/${credit.byline.slug}`)}>
 																{credit.byline.displayName}
 															</a>
 														</span>
@@ -92,9 +99,9 @@ const formatDate = (date: Date) =>
 									<time>{formatDate(post.data.publishedAt)}</time>
 								)}
 								{post.data.publishedAt && <span class="meta-dot" />}
-								<span>{getReadingTime(post.data.content)} mnt baca</span>
+								<span>{getReadingTime(post.data.content)} {t(locale, "minRead")}</span>
 							</div>
-							<a href={`/posts/${post.id}`} class="post-link">
+							<a href={L(`/posts/${post.id}`)} class="post-link">
 								<h2 class="post-title" {...post.edit.title}>{post.data.title}</h2>
 								{post.data.excerpt && (
 									<p class="post-excerpt" {...post.edit.excerpt}>{post.data.excerpt}</p>
@@ -103,7 +110,7 @@ const formatDate = (date: Date) =>
 							{tags.length > 0 && (
 								<div class="post-tags">
 									{tags.slice(0, 3).map((t) => (
-										<a href={`/tag/${t.slug}`} class="post-tag">
+										<a href={L(`/tag/${t.slug}`)} class="post-tag">
 											{t.label}
 										</a>
 									))}
@@ -114,12 +121,12 @@ const formatDate = (date: Date) =>
 				</div>
 			)
 		}
-		<nav class="pagination" aria-label="Paginasi">
-			{cursor && <a href="/posts">Halaman pertama</a>}
+		<nav class="pagination" aria-label={t(locale, "pagination")}>
+			{cursor && <a href={L("/posts")}>{t(locale, "firstPage")}</a>}
 			{
 				nextCursor && (
-					<a href={`/posts?cursor=${encodeURIComponent(nextCursor)}`}>
-						Halaman berikutnya
+					<a href={L(`/posts?cursor=${encodeURIComponent(nextCursor)}`)}>
+						{t(locale, "nextPage")}
 					</a>
 				)
 			}

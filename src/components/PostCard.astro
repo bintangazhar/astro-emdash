@@ -1,6 +1,8 @@
 ---
 import type { ContentBylineCredit, EditProxy, MediaValue } from "emdash";
 import { Image } from "emdash/ui";
+import { intlLocale, localizePath, type SupportedLocale } from "../utils/i18n";
+import { t } from "../utils/dict";
 
 interface Props {
 	title: string;
@@ -12,6 +14,7 @@ interface Props {
 	tags?: Array<{ slug: string; label: string }>;
 	bylines?: ContentBylineCredit[];
 	edit?: EditProxy;
+	locale?: SupportedLocale;
 }
 
 const {
@@ -24,10 +27,13 @@ const {
 	tags,
 	bylines,
 	edit,
+	locale = "id",
 } = Astro.props;
 
+const L = (p: string) => localizePath(p, locale);
+
 const formattedDate = date
-	? date.toLocaleDateString("id-ID", {
+	? date.toLocaleDateString(intlLocale(locale), {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
@@ -63,7 +69,7 @@ const formattedDate = date
 										/>
 									)}
 									<span class="card-byline-name">
-										<a href={`/author/${credit.byline.slug}`}>
+										<a href={L(`/author/${credit.byline.slug}`)}>
 											{credit.byline.displayName}
 										</a>
 									</span>
@@ -92,7 +98,7 @@ const formattedDate = date
 			}
 			{formattedDate && <time>{formattedDate}</time>}
 			{formattedDate && readingTime && <span class="meta-dot" />}
-			{readingTime && <span>{readingTime} mnt</span>}
+			{readingTime && <span>{readingTime} {t(locale, "minReadShort")}</span>}
 		</div>
 		<a href={href} class="card-link card-title-link">
 			<h2 class="card-title" {...edit?.title}>{title}</h2>
@@ -103,7 +109,7 @@ const formattedDate = date
 		tags && tags.length > 0 && (
 			<div class="card-tags">
 				{tags.slice(0, 2).map((tag) => (
-					<a href={`/tag/${tag.slug}`} class="card-tag">
+					<a href={L(`/tag/${tag.slug}`)} class="card-tag">
 						{tag.label}
 					</a>
 				))}

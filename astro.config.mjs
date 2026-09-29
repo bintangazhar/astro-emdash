@@ -6,12 +6,23 @@ import { sqlite } from "emdash/db";
 
 export default defineConfig({
 	output: "server",
-	// Single-language site in Indonesian. EmDash reads this for its content
-	// language (without it, entries default to English). Keep the default
-	// routing: prefixing the default locale breaks the /_emdash/admin router.
+	// Bilingual site (Indonesian default, English secondary). EmDash reads
+	// this for its content language. Keep prefixDefaultLocale: false so
+	// /_emdash/admin stays unprefixed and id URLs stay clean:
+	// /posts (id), /en/posts (en).
 	i18n: {
 		defaultLocale: "id",
-		locales: ["id"],
+		locales: ["id", "en"],
+		// No src/pages/en/ duplicates: /en/* rewrites to the id page with
+		// Astro.currentLocale = "en". EmDash middleware picks that up and
+		// returns English content automatically.
+		fallback: {
+			en: "id",
+		},
+		routing: {
+			prefixDefaultLocale: false,
+			fallbackType: "rewrite",
+		},
 	},
 	adapter: node({
 		mode: "standalone",

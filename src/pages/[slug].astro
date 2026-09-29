@@ -8,17 +8,35 @@ import {
 import { PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
+import { normalizeLocale, localizePath } from "../utils/i18n";
 
+const locale = normalizeLocale(Astro.currentLocale);
 const slug = decodeSlug(Astro.params.slug);
 
 if (!slug) {
 	return Astro.redirect("/404");
 }
 
-const { entry: page, cacheHint } = await getEmDashEntry("pages", slug);
+const {
+	entry: page,
+	cacheHint,
+	fallbackLocale,
+	isPreview,
+} = await getEmDashEntry("pages", slug, { locale });
 
 if (!page) {
 	return Astro.redirect("/404");
+}
+
+// Same cross-locale rule as post detail: never serve an /en/ page with
+// Indonesian content; bounce to the served locale's canonical URL.
+if (fallbackLocale && fallbackLocale !== locale && !isPreview) {
+	return Astro.redirect(
+		localizePath(
+			Astro.url.pathname + Astro.url.search,
+			normalizeLocale(fallbackLocale),
+		),
+	);
 }
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);

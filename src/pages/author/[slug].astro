@@ -8,9 +8,14 @@ import {
 import Base from "../../layouts/Base.astro";
 import PostCard from "../../components/PostCard.astro";
 import { getReadingTime } from "../../utils/reading-time";
+import { normalizeLocale, localizePath } from "../../utils/i18n";
+import { t } from "../../utils/dict";
+
+const locale = normalizeLocale(Astro.currentLocale);
+const L = (p: string) => localizePath(p, locale);
 
 const slug = decodeSlug(Astro.params.slug);
-const byline = slug ? await getBylineBySlug(slug) : null;
+const byline = slug ? await getBylineBySlug(slug, { locale }) : null;
 
 if (!byline) {
 	return Astro.redirect("/404");
@@ -27,6 +32,7 @@ const {
 	orderBy: { published_at: "desc" },
 	limit: 20,
 	cursor,
+	locale,
 });
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
@@ -35,6 +41,7 @@ const tagsByEntry = await getTermsForEntries(
 	"posts",
 	posts.map((p) => p.data.id),
 	"tag",
+	{ locale },
 );
 const postsWithData = posts.map((post) => ({
 	post,
@@ -48,9 +55,9 @@ const avatarUrl = byline.avatarMediaId
 ---
 
 <Base
-	title={`Artikel oleh ${byline.displayName}`}
+	title={`${t(locale, "byAuthor")} ${byline.displayName}`}
 	description={
-		byline.bio ?? `Semua artikel yang ditulis oleh ${byline.displayName}`
+		byline.bio ?? `${t(locale, "allByAuthor")} ${byline.displayName}`
 	}
 >
 	<section class="archive-section">
@@ -63,7 +70,7 @@ const avatarUrl = byline.avatarMediaId
 				/>
 			)}
 			<div>
-				<span class="archive-label">Penulis</span>
+				<span class="archive-label">{t(locale, "authorLabel")}</span>
 				<h1 class="archive-title">{byline.displayName}</h1>
 				{byline.bio && <p class="author-bio">{byline.bio}</p>}
 				{byline.websiteUrl && (
@@ -81,33 +88,34 @@ const avatarUrl = byline.avatarMediaId
 
 		{
 			postsWithData.length === 0 ? (
-				<p class="no-posts">Belum ada artikel dari penulis ini.</p>
+				<p class="no-posts">{t(locale, "noAuthorPosts")}</p>
 			) : (
 				<div class="posts-grid">
 					{postsWithData.map(({ post, tags, bylines }) => (
 						<PostCard
-							title={post.data.title ?? "Tanpa judul"}
+							title={post.data.title ?? t(locale, "untitled")}
 							excerpt={post.data.excerpt}
 							featuredImage={post.data.featured_image}
-							href={`/posts/${post.id}`}
+							href={L(`/posts/${post.id}`)}
 							date={post.data.publishedAt ?? undefined}
 							readingTime={getReadingTime(post.data.content)}
 							tags={tags.map((t) => ({ slug: t.slug, label: t.label }))}
 							bylines={bylines}
 							edit={post.edit}
+							locale={locale}
 						/>
 					))}
 				</div>
 			)
 		}
-		<nav class="pagination" aria-label="Paginasi">
-			{cursor && <a href={`/author/${byline.slug}`}>Halaman pertama</a>}
+		<nav class="pagination" aria-label={t(locale, "pagination")}>
+			{cursor && <a href={L(`/author/${byline.slug}`)}>{t(locale, "firstPage")}</a>}
 			{
 				nextCursor && (
 					<a
-						href={`/author/${byline.slug}?cursor=${encodeURIComponent(nextCursor)}`}
+						href={L(`/author/${byline.slug}?cursor=${encodeURIComponent(nextCursor)}`)}
 					>
-						Halaman berikutnya
+						{t(locale, "nextPage")}
 					</a>
 				)
 			}

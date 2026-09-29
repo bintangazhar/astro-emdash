@@ -1,12 +1,17 @@
 ---
 import Base from "../layouts/Base.astro";
+import { normalizeLocale, localizePath } from "../utils/i18n";
+import { t } from "../utils/dict";
+
+const locale = normalizeLocale(Astro.currentLocale);
+const L = (p: string) => localizePath(p, locale);
 ---
 
-<Base title="Halaman tidak ditemukan">
+<Base title={t(locale, "notFoundTitle")}>
 	<div class="not-found">
 		<h1>404</h1>
-		<p>Halaman yang Anda cari tidak ada.</p>
-		<a href="/">Kembali ke beranda</a>
+		<p>{t(locale, "notFoundBody")}</p>
+		<a href={L("/")}>{t(locale, "backHome")}</a>
 	</div>
 </Base>
 
