@@ -1,0 +1,132 @@
+---
+import {
+	getEmDashCollection,
+	getSiteSettings,
+	getTaxonomyTermsWithCacheHint,
+	getTermsForEntries,
+} from "emdash";
+import { Image } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+	orderBy: { published_at: "desc" },
+	limit: 12,
+});
+const sectionsResult = await getTaxonomyTermsWithCacheHint("category", {
+	includeCounts: false,
+});
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
+	await getSiteSettings(),
+);
+if (Astro.cache?.enabled) {
+	Astro.cache.set(cacheHint);
+	Astro.cache.set(sectionsResult.cacheHint);
+}
+
+// Batched section lookup for every story (one query, not N).
+const sectionsByEntry = await getTermsForEntries(
+	"posts",
+	posts.map((p) => p.data.id),
+	"category",
+);
+const stories = posts.map((post) => ({
+	post,
+	sections: sectionsByEntry.get(post.data.id) ?? [],
+}));
+
+const [lead, ...rest] = stories;
+const sections = sectionsResult.data;
+
+function formatDate(d: Date | null | undefined) {
+	if (!d) return null;
+	return d.toLocaleDateString("id-ID", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
+---
+
+<Base title={siteTitle} description={siteTagline}>
+	{
+		stories.length === 0 ? (
+			<p>
+				Belum ada berita. <a href="/_emdash/admin/content/posts/new">Tulis berita pertama</a>.
+			</p>
+		) : (
+			<>
+				{lead && (
+					<article class="lead-story">
+						{lead.sections[0] && (
+							<a class="kicker" href={`/category/${lead.sections[0].slug}`}>
+								{lead.sections[0].label}
+							</a>
+						)}
+						<h1>
+							<a href={`/posts/${lead.post.id}`} {...lead.post.edit.title}>
+								{lead.post.data.title}
+							</a>
+						</h1>
+						{lead.post.data.featured_image && (
+							<div {...lead.post.edit.featured_image}>
+								<Image image={lead.post.data.featured_image} />
+							</div>
+						)}
+						{lead.post.data.excerpt && (
+							<p class="dek" {...lead.post.edit.excerpt}>{lead.post.data.excerpt}</p>
+						)}
+						{formatDate(lead.post.data.publishedAt) && (
+							<p class="byline">
+								<time datetime={lead.post.data.publishedAt!.toISOString()}>
+									{formatDate(lead.post.data.publishedAt)}
+								</time>
+							</p>
+						)}
+					</article>
+				)}
+
+				<div class="news-grid">
+					<div>
+						<h2 class="section-heading">Terkini</h2>
+						<ul class="story-list">
+							{rest.map(({ post, sections: secs }) => (
+								<li>
+									{secs[0] && (
+										<a class="kicker" href={`/category/${secs[0].slug}`}>
+											{secs[0].label}
+										</a>
+									)}
+									<h3>
+										<a href={`/posts/${post.id}`} {...post.edit.title}>
+											{post.data.title}
+										</a>
+									</h3>
+									{post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
+									{formatDate(post.data.publishedAt) && (
+										<p class="byline">
+											<time datetime={post.data.publishedAt!.toISOString()}>
+												{formatDate(post.data.publishedAt)}
+											</time>
+										</p>
+									)}
+								</li>
+							))}
+						</ul>
+					</div>
+
+					<aside class="sections-box">
+						<h2>Rubrik</h2>
+						<ul>
+							{sections.map((s) => (
+								<li>
+									<a href={`/category/${s.slug}`}>{s.label}</a>
+								</li>
+							))}
+						</ul>
+					</aside>
+				</div>
+			</>
+		)
+	}
+</Base>

@@ -1,0 +1,326 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "News Starter",
+		"description": "Situs berita dengan artikel, rubrik, dan halaman",
+		"author": "EmDash"
+	},
+	"settings": {
+		"title": "Situs Berita Saya",
+		"tagline": "Kabar terkini dan liputan lokal, diperbarui setiap hari"
+	},
+	"collections": [
+		{
+			"slug": "posts",
+			"label": "Artikel",
+			"labelSingular": "Artikel",
+			"urlPattern": "/posts/{slug}",
+			"supports": ["drafts", "revisions", "preview", "scheduling", "search", "seo"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Judul",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Gambar Utama",
+					"type": "image",
+					"validation": {
+						"allowedMimeTypes": [
+							"image/png",
+							"image/jpeg",
+							"image/gif",
+							"image/webp",
+							"image/avif",
+							"image/svg+xml"
+						]
+					}
+				},
+				{
+					"slug": "content",
+					"label": "Isi",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Ringkasan",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Halaman",
+			"labelSingular": "Halaman",
+			"urlPattern": "/{slug}",
+			"supports": ["drafts", "revisions", "preview", "search", "seo"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Judul",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Isi",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Rubrik",
+			"labelSingular": "Rubrik",
+			"hierarchical": true,
+			"collections": ["posts"],
+			"terms": [
+				{
+					"slug": "world",
+					"label": "Dunia"
+				},
+				{
+					"slug": "politics",
+					"label": "Politik"
+				},
+				{
+					"slug": "business",
+					"label": "Bisnis"
+				},
+				{
+					"slug": "technology",
+					"label": "Teknologi"
+				},
+				{
+					"slug": "culture",
+					"label": "Budaya"
+				},
+				{
+					"slug": "sport",
+					"label": "Olahraga"
+				}
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tag",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": ["posts"],
+			"terms": [
+				{
+					"slug": "breaking",
+					"label": "Terkini"
+				},
+				{
+					"slug": "analysis",
+					"label": "Analisis"
+				}
+			]
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Navigasi Utama",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Beranda",
+					"url": "/"
+				},
+				{
+					"type": "custom",
+					"label": "Terkini",
+					"url": "/posts"
+				},
+				{
+					"type": "custom",
+					"label": "Tentang",
+					"url": "/about"
+				}
+			]
+		}
+	],
+	"widgetAreas": [
+		{
+			"name": "sidebar",
+			"label": "Bilah Sisi",
+			"description": "Area widget bilah sisi",
+			"widgets": [
+				{
+					"type": "component",
+					"componentId": "core:search",
+					"title": "Pencarian"
+				},
+				{
+					"type": "component",
+					"componentId": "core:categories",
+					"title": "Rubrik"
+				},
+				{
+					"type": "component",
+					"componentId": "core:recent-posts",
+					"title": "Berita utama",
+					"settings": {
+						"count": 5
+					}
+				}
+			]
+		}
+	],
+	"content": {
+		"pages": [
+			{
+				"id": "about",
+				"slug": "about",
+				"status": "published",
+				"data": {
+					"title": "Tentang",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Situs Berita Saya meliput kabar terkini dan isu lokal yang penting bagi pembaca. Wartawan kami turun ke lapangan setiap hari. Hubungi redaksi di redaksi@example.com.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					]
+				}
+			}
+		],
+		"posts": [
+			{
+				"id": "post-1",
+				"slug": "council-approves-transit-expansion",
+				"status": "published",
+				"data": {
+					"title": "Dewan Kota Setujui Perluasan Transit Pusat Kota",
+					"excerpt": "Dengan suara 7-2, anggota dewan menyetujui perpanjangan tiga jalur yang dibuka bertahap mulai tahun depan.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Dewan kota telah menyetujui perluasan jaringan transit pusat kota yang lama diperdebatkan, dengan tiga jalur baru yang direncanakan menghubungkan kawasan tepi sungai, kampus universitas, dan pinggiran utara.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Pembangunan tahap pertama dimulai musim semi. Wali kota mengatakan tarif akan dibekukan selama dua tahun selama pengerjaan berlangsung. Anggota dewan oposisi mempertanyakan skema pendanaan dan meminta audit independen sebelum kontrak ditandatangani.",
+									"_key": "k3"
+								}
+							],
+							"_key": "k2"
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["politics"],
+					"tag": ["breaking"]
+				}
+			},
+			{
+				"id": "post-2",
+				"slug": "startup-unveils-solar-battery",
+				"status": "published",
+				"data": {
+					"title": "Startup Lokal Luncurkan Baterai Surya Murah",
+					"excerpt": "Para pendirinya mengklaim unit ini menyimpan daya rumah tangga sehari penuh dengan harga separuh pesaing.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Sebuah perusahaan rintisan yang didirikan dua mantan peneliti universitas mendemonstrasikan baterai surya yang diklaim mampu menyimpan listrik rumah tangga sehari penuh dengan biaya separuh sistem yang ada.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Insinyur independen yang menelaah data pengujian menyebut hasilnya menjanjikan, tetapi mengingatkan bahwa produksi massal adalah tantangan sesungguhnya. Perusahaan berencana uji coba pada 500 rumah akhir tahun ini.",
+									"_key": "k3"
+								}
+							],
+							"_key": "k2"
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["technology", "business"],
+					"tag": ["analysis"]
+				}
+			},
+			{
+				"id": "post-3",
+				"slug": "harvest-festival-returns",
+				"status": "published",
+				"data": {
+					"title": "Festival Panen Kembali Hadir di Pusat Kota Akhir Pekan Ini",
+					"excerpt": "Lebih dari 120 stan kuliner, tiga panggung musik, dan pasar malam memadati tepi sungai mulai Jumat.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Festival panen tahunan kembali mengambil alih tepi sungai pusat kota akhir pekan ini, dengan lebih dari 120 stan kuliner, tiga panggung musik, dan pasar malam yang berlangsung Jumat hingga Minggu.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Panitia memperkirakan pengunjung membludak dan mengimbau warga menggunakan transportasi umum. Masuk area utama gratis; tiket konser utama tersedia di pintu masuk.",
+									"_key": "k3"
+								}
+							],
+							"_key": "k2"
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["culture"],
+					"tag": []
+				}
+			}
+		]
+	}
+}

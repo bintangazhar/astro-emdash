@@ -1,0 +1,170 @@
+---
+import { getMenuWithCacheHint, getSiteSettingsWithCacheHint } from "emdash";
+import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
+import { createPublicPageContext } from "emdash/page";
+import LiveSearch from "emdash/ui/search";
+import "../styles/theme.css";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+interface Props {
+	title: string;
+	pageTitle?: string | null;
+	description?: string | null;
+	image?: string | null;
+	canonical?: string | null;
+	/** Pass content reference for plugin page contributions on content pages */
+	content?: { collection: string; id: string; slug?: string | null };
+	/** Article metadata for Open Graph article: tags on story pages */
+	articleMeta?: {
+		publishedTime?: string | null;
+		modifiedTime?: string | null;
+		author?: string | null;
+	};
+	/** Markdown version URL for `rel="alternate" type="text/markdown"` (llms.txt) */
+	markdownAlternate?: string | null;
+}
+
+const {
+	title,
+	pageTitle,
+	description,
+	image,
+	canonical,
+	content,
+	articleMeta,
+	markdownAlternate,
+} = Astro.props;
+const [settingsResult, menuResult] = await Promise.all([
+	getSiteSettingsWithCacheHint(),
+	getMenuWithCacheHint("primary"),
+]);
+if (Astro.cache?.enabled) {
+	Astro.cache.set(settingsResult.cacheHint);
+	Astro.cache.set(menuResult.cacheHint);
+}
+
+const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(
+	settingsResult.data,
+);
+const titleIncludesSiteName =
+	title === siteTitle ||
+	title.endsWith(` | ${siteTitle}`) ||
+	title.endsWith(` — ${siteTitle}`);
+const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`;
+const pageDescription = description ?? siteTagline;
+const menu = menuResult.data;
+
+const pageCtx = createPublicPageContext({
+	Astro,
+	kind: content ? "content" : "custom",
+	pageType: content ? "article" : "website",
+	title: fullTitle,
+	pageTitle: pageTitle ?? title,
+	description: pageDescription,
+	canonical: canonical ?? Astro.url.origin + Astro.url.pathname,
+	image,
+	content,
+	articleMeta,
+	siteName: siteTitle,
+});
+---
+
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script is:inline>
+			(function () {
+				var c = document.cookie;
+				var i = c.indexOf("theme=");
+				var theme = i >= 0 ? c.slice(i + 6).split(";")[0] : null;
+				if (theme === "dark" || theme === "light") {
+					document.documentElement.classList.add(theme);
+				}
+			})();
+		</script>
+		<title>{fullTitle}</title>
+		<link rel="describedby" href="/llms.txt" />
+		{
+			markdownAlternate && (
+				<link
+					rel="alternate"
+					type="text/markdown"
+					href={markdownAlternate}
+				/>
+			)
+		}
+		<EmDashHead page={pageCtx} />
+	</head>
+	<body>
+		<EmDashBodyStart page={pageCtx} />
+
+		<header class="site-header">
+			<nav class="site-nav">
+				<a class="site-brand" href="/">
+					{
+						siteLogo ? (
+							<img
+								src={siteLogo.url}
+								alt={siteLogo.alt || siteTitle}
+								style="height:48px;width:auto;margin:-8px 0;display:block;"
+							/>
+						) : (
+							siteTitle
+						)
+					}
+				</a>
+				{
+					menu?.items.map((item) => (
+						<a
+							href={item.url}
+							target={item.target}
+							rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+						>
+							{item.label}
+						</a>
+					))
+				}
+				<LiveSearch placeholder="Cari..." collections={["posts", "pages"]} />
+				<button id="theme-toggle" class="theme-toggle" type="button">
+					Mode gelap
+				</button>
+			</nav>
+		</header>
+
+		<main class="site-main">
+			<slot />
+		</main>
+
+		<script is:inline>
+			(function () {
+				var btn = document.getElementById("theme-toggle");
+				if (!btn) return;
+				function current() {
+					if (document.documentElement.classList.contains("dark"))
+						return "dark";
+					if (document.documentElement.classList.contains("light"))
+						return "light";
+					return window.matchMedia("(prefers-color-scheme: dark)").matches
+						? "dark"
+						: "light";
+				}
+				function paint() {
+					btn.textContent = current() === "dark" ? "Mode terang" : "Mode gelap";
+				}
+				btn.addEventListener("click", function () {
+					var next = current() === "dark" ? "light" : "dark";
+					document.documentElement.classList.remove("dark", "light");
+					document.documentElement.classList.add(next);
+					document.cookie =
+						"theme=" + next + ";max-age=31536000;path=/;SameSite=Lax";
+					paint();
+				});
+				paint();
+			})();
+		</script>
+
+		<EmDashBodyEnd page={pageCtx} />
+	</body>
+</html>
