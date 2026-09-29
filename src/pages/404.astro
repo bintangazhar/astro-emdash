@@ -2,8 +2,32 @@
 import Base from "../layouts/Base.astro";
 ---
 
-<Base title="Tidak ditemukan">
-	<h1>Halaman tidak ditemukan</h1>
-	<p>Halaman yang Anda cari tidak ada.</p>
-	<a href="/">Kembali ke beranda</a>
+<Base title="Halaman tidak ditemukan">
+	<div class="not-found">
+		<h1>404</h1>
+		<p>Halaman yang Anda cari tidak ada.</p>
+		<a href="/">Kembali ke beranda</a>
+	</div>
 </Base>
+
+<style>
+	.not-found {
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+	}
+
+	.not-found h1 {
+		font-size: var(--font-size-5xl);
+		margin-bottom: var(--spacing-2);
+		color: var(--color-border);
+	}
+
+	.not-found p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-6);
+	}
+
+	.not-found a {
+		color: var(--color-text);
+	}
+</style>
