@@ -1,0 +1,82 @@
+diff --git a/src/astro/routes/admin.astro b/src/astro/routes/admin.astro
+index 535231148ce442edfed22c770d57d314b8f9c27e..fb8ffa9e2f4c8bee049af9dce3559e7be7f6686b 100755
+--- a/src/astro/routes/admin.astro
++++ b/src/astro/routes/admin.astro
+@@ -26,34 +26,47 @@ const resolvedDir = getLocaleDir(resolvedLocale);
+ const messages = await loadMessages(resolvedLocale);
+ 
+ const adminConfig = Astro.locals.emdash?.config?.admin;
+-const pageTitle = adminConfig?.siteName ? `${adminConfig.siteName} Admin` : "EmDash Admin";
+-
+-// The admin shell must never be stored by a shared cache. Without an explicit
+-// Cache-Control, caches fall back to RFC 9111 heuristic freshness — e.g.
+-// Cloudflare's Workers Cache stores header-less 200s for 2 hours — so an
+-// authenticated editor's 200 could be replayed to anonymous visitors instead
+-// of the login redirect. The shell is also personalized per request (locale
+-// via cookie/Accept-Language). API routes already send `private, no-store`
+-// (API_CACHE_HEADERS); this closes the same gap for the admin HTML.
+-Astro.response.headers.set("Cache-Control", "private, no-store");
+ 
+ // Favicon precedence: an explicit build-time `admin.favicon` is admin-specific
+ // and always wins — in that case the settings read is skipped entirely.
+ // Otherwise fall back to the Site Icon configured in Settings → General, so
+ // the admin shell is branded like the public site (WordPress-style Site Icon,
+ // which also brands wp-admin), and finally the bundled EmDash mark below.
++//
++// Site name precedence (mirrors the manifest route): explicit build-time
++// `admin.siteName` → Site Title (Settings → General) → the bundled "EmDash"
++// default. Without the DB fallback the shell title stays "EmDash Admin" even
++// after the operator renames the site.
+ const emdash = Astro.locals.emdash;
+ let siteFavicon: string | undefined;
+ let siteFaviconType: string | undefined;
+-if (!adminConfig?.favicon && emdash?.db) {
++let siteTitle: string | undefined;
++if ((!adminConfig?.favicon || !adminConfig?.siteName) && emdash?.db) {
+ 	try {
+ 		const settings = await getSiteSettingsWithDb(emdash.db, emdash.storage ?? null);
+-		siteFavicon = settings.favicon?.url ?? undefined;
+-		siteFaviconType = settings.favicon?.contentType ?? undefined;
++		if (!adminConfig?.favicon) {
++			siteFavicon = settings.favicon?.url ?? undefined;
++			siteFaviconType = settings.favicon?.contentType ?? undefined;
++		}
++		if (!adminConfig?.siteName && typeof settings.title === "string" && settings.title) {
++			siteTitle = settings.title;
++		}
+ 	} catch {
+ 		// Settings unavailable (e.g. pre-setup) — fall back to the config/default.
+ 	}
+ }
++const dynamicSiteName = adminConfig?.siteName ?? siteTitle;
++const pageTitle = dynamicSiteName ? `${dynamicSiteName} Admin` : "EmDash Admin";
++
++// The admin shell must never be stored by a shared cache. Without an explicit
++// Cache-Control, caches fall back to RFC 9111 heuristic freshness — e.g.
++// Cloudflare's Workers Cache stores header-less 200s for 2 hours — so an
++// authenticated editor's 200 could be replayed to anonymous visitors instead
++// of the login redirect. The shell is also personalized per request (locale
++// via cookie/Accept-Language). API routes already send `private, no-store`
++// (API_CACHE_HEADERS); this closes the same gap for the admin HTML.
++Astro.response.headers.set("Cache-Control", "private, no-store");
++
+ const favicon = adminConfig?.favicon ?? siteFavicon;
+ // The media-file URL has no extension, so browsers need the MIME type —
+ // Chromium ignores SVG favicons without type="image/svg+xml". Only set for
+@@ -139,14 +152,14 @@ const faviconType = adminConfig?.favicon ? undefined : siteFaviconType;
+ 				</style>
+ 				<div class="loader-inner">
+ 					<div class="spinner"></div>
+-					<p>{adminConfig?.siteName ? `Loading ${adminConfig.siteName}...` : "Loading EmDash..."}</p>
++					<p>{dynamicSiteName ? `Loading ${dynamicSiteName}...` : "Loading EmDash..."}</p>
+ 				</div>
+ 			</div>
+ 			<AdminWrapper
+ 				client:only="react"
+ 				locale={resolvedLocale}
+ 				messages={messages}
+-				adminBranding={{ logo: adminConfig?.logo, siteName: adminConfig?.siteName }}
++				adminBranding={{ logo: adminConfig?.logo, siteName: dynamicSiteName }}
+ 			/>
+ 		</div>
+ 	</body>
