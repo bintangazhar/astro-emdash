@@ -1,0 +1,205 @@
+---
+import {
+	getBylineBySlug,
+	getEmDashCollection,
+	getTermsForEntries,
+	decodeSlug,
+} from "emdash";
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getReadingTime } from "../../utils/reading-time";
+
+const slug = decodeSlug(Astro.params.slug);
+const byline = slug ? await getBylineBySlug(slug) : null;
+
+if (!byline) {
+	return Astro.redirect("/404");
+}
+
+const cursor = Astro.url.searchParams.get("cursor") || undefined;
+const group = byline.translationGroup ?? byline.id;
+const {
+	entries: posts,
+	cacheHint,
+	nextCursor,
+} = await getEmDashCollection("posts", {
+	where: { byline: group },
+	orderBy: { published_at: "desc" },
+	limit: 20,
+	cursor,
+});
+
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const tagsByEntry = await getTermsForEntries(
+	"posts",
+	posts.map((p) => p.data.id),
+	"tag",
+);
+const postsWithData = posts.map((post) => ({
+	post,
+	tags: tagsByEntry.get(post.data.id) ?? [],
+	bylines: post.data.bylines ?? [],
+}));
+
+const avatarUrl = byline.avatarMediaId
+	? `/_emdash/api/media/file/${byline.avatarMediaId}`
+	: null;
+---
+
+<Base
+	title={`Artikel oleh ${byline.displayName}`}
+	description={
+		byline.bio ?? `Semua artikel yang ditulis oleh ${byline.displayName}`
+	}
+>
+	<section class="archive-section">
+		<header class="archive-header author-header">
+			{avatarUrl && (
+				<img
+					src={avatarUrl}
+					alt={byline.displayName}
+					class="author-avatar"
+				/>
+			)}
+			<div>
+				<span class="archive-label">Penulis</span>
+				<h1 class="archive-title">{byline.displayName}</h1>
+				{byline.bio && <p class="author-bio">{byline.bio}</p>}
+				{byline.websiteUrl && (
+					<a
+						href={byline.websiteUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="author-website"
+					>
+						{byline.websiteUrl.replace(/^https?:\/\//, "")}
+					</a>
+				)}
+			</div>
+		</header>
+
+		{
+			postsWithData.length === 0 ? (
+				<p class="no-posts">Belum ada artikel dari penulis ini.</p>
+			) : (
+				<div class="posts-grid">
+					{postsWithData.map(({ post, tags, bylines }) => (
+						<PostCard
+							title={post.data.title ?? "Tanpa judul"}
+							excerpt={post.data.excerpt}
+							featuredImage={post.data.featured_image}
+							href={`/posts/${post.id}`}
+							date={post.data.publishedAt ?? undefined}
+							readingTime={getReadingTime(post.data.content)}
+							tags={tags.map((t) => ({ slug: t.slug, label: t.label }))}
+							bylines={bylines}
+							edit={post.edit}
+						/>
+					))}
+				</div>
+			)
+		}
+		<nav class="pagination" aria-label="Paginasi">
+			{cursor && <a href={`/author/${byline.slug}`}>Halaman pertama</a>}
+			{
+				nextCursor && (
+					<a
+						href={`/author/${byline.slug}?cursor=${encodeURIComponent(nextCursor)}`}
+					>
+						Halaman berikutnya
+					</a>
+				)
+			}
+		</nav>
+	</section>
+</Base>
+
+<style>
+	.archive-section {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-12) var(--spacing-6);
+	}
+
+	.archive-header {
+		margin-bottom: var(--spacing-12);
+		padding-bottom: var(--spacing-8);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.author-header {
+		display: flex;
+		gap: var(--spacing-6);
+		align-items: flex-start;
+	}
+
+	.author-avatar {
+		width: 72px;
+		height: 72px;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+
+	.archive-label {
+		display: block;
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		color: var(--color-brand);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.archive-title {
+		font-size: var(--font-size-4xl);
+		font-weight: var(--font-weight-display);
+		letter-spacing: var(--tracking-tight);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.author-bio {
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		max-width: 60ch;
+	}
+
+	.author-website {
+		display: inline-block;
+		margin-top: var(--spacing-2);
+		font-size: var(--font-size-sm);
+	}
+
+	.posts-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--spacing-12) var(--spacing-8);
+	}
+
+	.no-posts {
+		color: var(--color-muted);
+	}
+
+	.pagination {
+		display: flex;
+		gap: var(--spacing-4);
+		margin-top: var(--spacing-12);
+	}
+
+	@media (max-width: 900px) {
+		.posts-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.posts-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.author-header {
+			flex-direction: column;
+		}
+	}
+</style>

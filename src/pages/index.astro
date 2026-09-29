@@ -113,7 +113,9 @@ function formatDate(date: Date | null | undefined) {
 																/>
 															)}
 															<span class="featured-byline-name">
-																{credit.byline.displayName}
+																<a href={`/author/${credit.byline.slug}`}>
+																	{credit.byline.displayName}
+																</a>
 															</span>
 														</span>
 													</>
@@ -285,6 +287,15 @@ function formatDate(date: Date | null | undefined) {
 	.featured-byline-name {
 		font-weight: 500;
 		color: var(--color-text-secondary);
+	}
+
+	.featured-byline-name a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.featured-byline-name a:hover {
+		color: var(--color-brand);
 	}
 
 	.byline-sep {

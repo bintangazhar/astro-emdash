@@ -58,41 +58,43 @@ const formatDate = (date: Date) =>
 				<div class="posts-list">
 					{postsWithTags.map(({ post, tags, bylines }) => (
 						<article class="post-item">
-							<a href={`/posts/${post.id}`} class="post-link">
-								<div class="post-meta">
-									{bylines.length > 0 && (
-										<>
-											<div class="post-bylines">
-												{bylines.slice(0, 2).map((credit, index) => (
-													<>
-														{index > 0 && <span class="byline-sep">,</span>}
-														<span class="post-byline">
-															{credit.byline.avatarMediaId && (
-																<img
-																	src={`/_emdash/api/media/file/${credit.byline.avatarMediaId}`}
-																	alt={credit.byline.displayName}
-																	class="post-byline-avatar"
-																/>
-															)}
-															<span class="post-byline-name">
+							<div class="post-meta">
+								{bylines.length > 0 && (
+									<>
+										<div class="post-bylines">
+											{bylines.slice(0, 2).map((credit, index) => (
+												<>
+													{index > 0 && <span class="byline-sep">,</span>}
+													<span class="post-byline">
+														{credit.byline.avatarMediaId && (
+															<img
+																src={`/_emdash/api/media/file/${credit.byline.avatarMediaId}`}
+																alt={credit.byline.displayName}
+																class="post-byline-avatar"
+															/>
+														)}
+														<span class="post-byline-name">
+															<a href={`/author/${credit.byline.slug}`}>
 																{credit.byline.displayName}
-															</span>
+															</a>
 														</span>
-													</>
-												))}
-												{bylines.length > 2 && (
-													<span class="byline-more">+{bylines.length - 2}</span>
-												)}
-											</div>
-											<span class="meta-dot" />
-										</>
-									)}
-									{post.data.publishedAt && (
-										<time>{formatDate(post.data.publishedAt)}</time>
-									)}
-									{post.data.publishedAt && <span class="meta-dot" />}
-									<span>{getReadingTime(post.data.content)} mnt baca</span>
-								</div>
+													</span>
+												</>
+											))}
+											{bylines.length > 2 && (
+												<span class="byline-more">+{bylines.length - 2}</span>
+											)}
+										</div>
+										<span class="meta-dot" />
+									</>
+								)}
+								{post.data.publishedAt && (
+									<time>{formatDate(post.data.publishedAt)}</time>
+								)}
+								{post.data.publishedAt && <span class="meta-dot" />}
+								<span>{getReadingTime(post.data.content)} mnt baca</span>
+							</div>
+							<a href={`/posts/${post.id}`} class="post-link">
 								<h2 class="post-title" {...post.edit.title}>{post.data.title}</h2>
 								{post.data.excerpt && (
 									<p class="post-excerpt" {...post.edit.excerpt}>{post.data.excerpt}</p>
@@ -216,6 +218,15 @@ const formatDate = (date: Date) =>
 	.post-byline-name {
 		font-weight: 500;
 		color: var(--color-text-secondary);
+	}
+
+	.post-byline-name a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.post-byline-name a:hover {
+		color: var(--color-brand);
 	}
 
 	.byline-sep {
