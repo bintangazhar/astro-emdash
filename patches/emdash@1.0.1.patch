@@ -1,3 +1,16 @@
+diff --git a/dist/page/index.mjs b/dist/page/index.mjs
+index 4c7a2971736e3686436fde5b2a4f3d6610c5ee54..8d582b9117c224e7b7cd894f32c92377da2fdf5c 100755
+--- a/dist/page/index.mjs
++++ b/dist/page/index.mjs
+@@ -264,7 +264,7 @@ function buildBlogPostingJsonLd(page, defaultOgImage) {
+ 	const siteName = page.siteName;
+ 	return cleanJsonLd({
+ 		"@context": "https://schema.org",
+-		"@type": "BlogPosting",
++		"@type": "Article",
+ 		headline: ogTitle,
+ 		description,
+ 		image: ogImage || void 0,
 diff --git a/src/astro/routes/admin.astro b/src/astro/routes/admin.astro
 index 535231148ce442edfed22c770d57d314b8f9c27e..fb8ffa9e2f4c8bee049af9dce3559e7be7f6686b 100755
 --- a/src/astro/routes/admin.astro
@@ -80,3 +93,25 @@ index 535231148ce442edfed22c770d57d314b8f9c27e..fb8ffa9e2f4c8bee049af9dce3559e7b
  			/>
  		</div>
  	</body>
+diff --git a/src/page/jsonld.ts b/src/page/jsonld.ts
+index 2a2be7f77d4083729dd279829a17dc66bbeba14b..4dc7a66a7bda755d5b29b1579abbef57ed33ef2e 100755
+--- a/src/page/jsonld.ts
++++ b/src/page/jsonld.ts
+@@ -27,7 +27,7 @@ export function cleanJsonLd(obj: Record<string, unknown>): Record<string, unknow
+ }
+ 
+ /**
+- * Build a BlogPosting JSON-LD graph from page context.
++ * Build an Article JSON-LD graph from page context.
+  * Used for article-type content pages.
+  *
+  * @param page - Page context for the current request.
+@@ -51,7 +51,7 @@ export function buildBlogPostingJsonLd(
+ 
+ 	return cleanJsonLd({
+ 		"@context": "https://schema.org",
+-		"@type": "BlogPosting",
++		"@type": "Article",
+ 		headline: ogTitle,
+ 		description,
+ 		image: ogImage || undefined,
