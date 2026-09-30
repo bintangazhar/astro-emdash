@@ -36,6 +36,36 @@
       "sourceType": "github",
       "skillPath": "skills/antislop-ui/SKILL.md",
       "computedHash": "4cb1cb91997ca9849438d1bb1a5194626e1255a1eaec59301fef174a3dee9c90"
+    },
+    "building-emdash-site": {
+      "source": "emdash-cms/skills",
+      "sourceType": "github",
+      "skillPath": "skills/building-emdash-site/SKILL.md",
+      "computedHash": "fd0dea13003178526d32be8106fb779df6ef6d0c824988bf8dc7d3f183c80342"
+    },
+    "creating-plugins": {
+      "source": "emdash-cms/skills",
+      "sourceType": "github",
+      "skillPath": "skills/creating-plugins/SKILL.md",
+      "computedHash": "2ba84aaef57cd33be0bf1def216d3989faaf9111e415499df9a66e7fb3cb947e"
+    },
+    "emdash-cli": {
+      "source": "emdash-cms/skills",
+      "sourceType": "github",
+      "skillPath": "skills/emdash-cli/SKILL.md",
+      "computedHash": "46f79a0f94bcfb459724393f002561e9a7defc2a578dd2d7feb0a080a49e9746"
+    },
+    "wordpress-plugin-to-emdash": {
+      "source": "emdash-cms/skills",
+      "sourceType": "github",
+      "skillPath": "skills/wordpress-plugin-to-emdash/SKILL.md",
+      "computedHash": "4fd76aa05baad0372561d8a8e80fb0bf837d6300e4b96f09e7735fabd6670b02"
+    },
+    "wordpress-theme-to-emdash": {
+      "source": "emdash-cms/skills",
+      "sourceType": "github",
+      "skillPath": "skills/wordpress-theme-to-emdash/SKILL.md",
+      "computedHash": "2ee555915d9ee321aeb1c5d0740f6cbe0ac3250e13c5e747c9dc6f7f04cd44c7"
     }
   }
 }
