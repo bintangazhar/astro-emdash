@@ -3,6 +3,7 @@ import react from "@astrojs/react";
 import { defineConfig, fontProviders } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
+import { themeSettings } from "./src/plugins/theme-settings.ts";
 
 export default defineConfig({
 	output: "server",
@@ -36,6 +37,7 @@ export default defineConfig({
 			admin: {
 				logo: "/admin-logo.png",
 			},
+			plugins: [themeSettings()],
 		}),
 	],
 	devToolbar: { enabled: false },
