@@ -28,7 +28,7 @@ export function themeSettings(): PluginDescriptor {
 				label: "Font heading",
 				description: "Gaya font untuk h1-h6 (override --font-heading).",
 				options: [
-					{ value: "default", label: "Default (ikuti body)" },
+					{ value: "default", label: "Default" },
 					{ value: "serif", label: "Serif" },
 					{ value: "mono", label: "Mono" },
 				],
